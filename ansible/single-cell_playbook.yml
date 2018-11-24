@@ -1,0 +1,47 @@
+---
+- hosts: localhost
+  gather_facts: no
+  pre_tasks:
+    - name: get localhosts ip address
+      command: curl --silent --fail http://ifconfig.me/ip
+      register: host_external_ip
+
+    - set_fact: external_hostname="{{host_external_ip.stdout}}"
+
+- hosts: aws-ubuntu # applies to all instances under this name in a hosts file
+  remote_user: root # will be working as root
+  become: yes # should become the root user (sudo privillaged)
+  become_method: sudo
+  gather_facts: no
+
+- hosts: Atmosphere # applies to all instances under this name in a hosts file
+  remote_user: root # will be working as root
+  become: yes # should become the root user (sudo privillaged)
+  become_method: sudo
+  gather_facts: no
+
+  pre_tasks:
+    - set_fact:
+        local_ip: "{{ hostvars['localhost']['external_hostname'] }}"
+
+    - name: stop fail2ban
+      service: name=fail2ban state=stopped
+
+    - name: Check if control machine IP is on fail2ban whitelist
+      shell: grep {{local_ip}} /etc/fail2ban/jail.local
+      register: ip_result
+      ignore_errors: true
+
+    - name: edit fail2ban config
+      shell: >
+        sed '/^ignoreip/s/$/ {{local_ip}}/' /etc/fail2ban/jail.local
+        > jail.tmp && mv jail.tmp /etc/fail2ban/jail.local
+      when: ip_result|failed
+
+    - name: restartfail2ban
+      service: name=fail2ban state=restarted
+
+- roles:
+    - role: docker-config
+    - role: irods
+...
