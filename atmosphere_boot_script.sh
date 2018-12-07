@@ -16,10 +16,10 @@ main ()
 
 copy_workshop_datasets ()
 {
-irsync -rs i:/iplant/home/shared/cyverse_training/tutorials/advanced_kallisto_and_single_cell/ /scratch/docker-persistant/tutorial-data >/irods_dataxfer.log 2>&1
+irsync -rs i:/iplant/home/shared/cyverse_training/tutorials/advanced_kallisto_and_single_cell /scratch/docker-persistant >/irods_dataxfer.log 2>&1
 ln -s /docker-persistant/tutorial-data /scratch/docker-persistant/tutorial-data
-chown -R $ATMO_USER /scratch/docker-persistant/tutorial-data
-chown -R $ATMO_USER /docker-persistant/tutorial-data
+chown -R $ATMO_USER /scratch/docker-persistant
+chown -R $ATMO_USER /docker-persistant
 }
 inject_atmo_vars ()
 {
