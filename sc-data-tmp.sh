@@ -9,15 +9,15 @@ main ()
     #
 
     init_irods
-    copy_dc_home_datasets
+    copy_workshop_datasets
 }
 
-copy_dc_home_datasets ()
+copy_workshop_datasets ()
 {
-  # Performs an irsync command to copy a test dataset folder to $ATMO_USER
-  # desktop
-  mkdir /tutorial-data
-  irsync -rs i:/iplant/home/shared/cyverse_training/tutorials/kallisto_single_cell_tutorial /tutorial-data >/irods_dataxfer.log 2>&1
+
+mkdir /docker-persistant/tutorial-data
+irsync -rs i:/iplant/home/shared/cyverse_training/tutorials/advanced_kallisto_and_single_cell/ /docker-persistant/tutorial-data >/irods_dataxfer.log 2>&1
+
 }
 
 init_irods ()

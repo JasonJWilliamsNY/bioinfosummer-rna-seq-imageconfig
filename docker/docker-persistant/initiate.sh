@@ -88,4 +88,6 @@ ln -s /bin/bash /bin/sh
 echo "SHELL=/bin/bash" >> /etc/environment
 
 rstudio-server start
+jupyter nbextensions_configurator enable --system
+jupyter nbextension enable --py --sys-prefix widgetsnbextension
 jupyterhub --ip 0.0.0.0 --port 8000 -f /docker-persistant/jupyterhub_config.py

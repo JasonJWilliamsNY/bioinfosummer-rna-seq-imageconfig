@@ -4,7 +4,7 @@
 ##########   IMPORTANT   #############
 # To work properly, git clone https://github.com/JasonJWilliamsNY/docker_jupyterhub_config
 # use the following command to start the container
-# docker run -p 8000:8000 -p 8787:8787 --name single-cell -d -v SOMEPATH/docker-persistant:/docker-persistant jasonjwilliamsny/ubuntu-jhub-dev3.0:latest
+# docker run --restart always -p 8000:8000 -p 8787:8787 --cpus="4" --name single-cell -d -v /docker-persistant:/docker-persistant jasonjwilliamsny/single-cell-training:dev4
 #
 # Based on Ubuntu
 FROM ubuntu:bionic-20180710
@@ -82,11 +82,13 @@ RUN python3 -m bash_kernel.install
 RUN python3 -m ipykernel.kernelspec
 #
 #
-# Use python to install sciency packages
-RUN python3 -m pip install\
+# Use python to install sciency packages for single-cell analysis
+RUN apt-get update &&\
+  python3 -m pip install\
   magic-impute\
   sklearn\
-  phate
+  phate\
+  umi-tools
 #
 #
 # Install iCommands
@@ -154,14 +156,19 @@ RUN R -e "install.packages('gridExtra')"
 RUN R -e "install.packages('cowplot')"
 RUN R -e "install.packages('knitr')"
 RUN R -e "install.packages('rmarkdown')"
-RUN R -e "install.packages('Seurat')"
 RUN R -e "install.packages('packrat')"
+RUN R -e "install.packages('onlinePCA')"
+RUN R -e "install.packages('RcppArmadillo')"
 RUN R -e "BiocManager::install('rhdf5', version = '3.8')"
 RUN R -e "devtools::install_github('pachterlab/sleuth')"
 RUN R -e "BiocManager::install('simpleSingleCell', version = '3.8')"
 RUN R -e "BiocManager::install('scran', version = '3.8')"
 RUN R -e "BiocManager::install('biomaRt', version = '3.8')"
 RUN R -e "BiocManager::install('monocle', version = '3.8')"
+RUN R -e "devtools::install_github(repo = 'hhoeflin/hdf5r')"
+RUN R -e "devtools::install_github(repo = 'mojaveazure/loomR', ref = 'develop')"
+RUN R -e "devtools::install_github(repo = 'satijalab/seurat', ref = 'loom')"
+RUN R -e "devtools::install_github('nteetor/zeallot')"
 #
 #
 # install virtualenv
@@ -204,8 +211,9 @@ RUN git clone https://github.com/BUStools/bustools.git \
     && chmod +x /bin/bustools
 #
 #
-# Link conda executables to bin
+# Link conda executables to bin and attempt to fix any missing libraries
 RUN ln -s /opt/conda/pkgs/*/bin/* /bin; exit 0
+RUN ln -s /opt/conda/pkgs/*/lib/* /usr/lib; exit 0
 #
 #
 # Expose port 8000, 8787
